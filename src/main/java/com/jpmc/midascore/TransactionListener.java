@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 @Component
@@ -26,7 +27,7 @@ public class TransactionListener {
             UserRepository userRepository,
             DatabaseConduit databaseConduit,
             RestTemplateBuilder restTemplateBuilder,
-            @Value("${general.incentive-url:http://localhost:33433/incentive}") String incentiveUrl) {
+            @Value("${general.incentive-url:http://localhost:8080/incentive}") String incentiveUrl) {
         this.userRepository = userRepository;
         this.databaseConduit = databaseConduit;
         this.restTemplate = restTemplateBuilder.build();
@@ -34,6 +35,7 @@ public class TransactionListener {
     }
 
     @KafkaListener(topics = "${general.kafka-topic}")
+    @Transactional
     public void listen(Transaction transaction) {
         UserRecord sender = userRepository.findById(transaction.getSenderId());
         UserRecord recipient = userRepository.findById(transaction.getRecipientId());
